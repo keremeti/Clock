@@ -18,6 +18,7 @@ public class Clock : MonoBehaviour
     private HandsController secondsController;
 
     [SerializeField] private GameObject alarmPrefab;
+    private Alarm alarm;
 
     [HideInInspector] public GameObject alarmCLock;
     private DateTime time = new();
@@ -46,9 +47,8 @@ public class Clock : MonoBehaviour
         StartCoroutine(StartClock());
         cancelButton.onClick.AddListener(DestroyAlarm);
         state = new NormalClock(this);
+        state.Start();
     }
-
-
 
     // сами часы
     private IEnumerator StartClock()
@@ -74,28 +74,33 @@ public class Clock : MonoBehaviour
         int hours, minutes, seconds;
         inputFields.GetInputFieldTime(out hours, out minutes, out seconds);
         
-        Alarm alarm = CreateAlarm(new(Time.Year, Time.Month, Time.Day,
+        alarm = CreateAlarm(new(time.Year, time.Month, time.Day,
             hours, minutes, seconds));
-        alarm.StartAlarm(this);
+        alarm.StartAlarm(cancelButton);
     }
 
     public Alarm CreateAlarm(DateTime alarmTime)
     {
-        if (alarmCLock != null)
+        if (alarmCLock)
         {
             Destroy(alarmCLock.gameObject);
             cancelButton.gameObject.SetActive(false);
         }
         // создание будильника из префаба и выставление времени на нем
         alarmCLock = Instantiate<GameObject>(alarmPrefab);
-        Alarm alarm = alarmCLock.GetComponent<Alarm>();
+        alarm = alarmCLock.GetComponent<Alarm>();
         alarm.UpdateAlarm(alarmTime);
+        alarm.clockTime = time;
         return alarm;
     }
 
     private void LateUpdate()
     {
         state.Update();
+        if (alarm is not null)
+        {
+            alarm.clockTime = time;
+        }
     }
 
     // синхронизация времени с внешним источником

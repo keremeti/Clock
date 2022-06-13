@@ -2,14 +2,16 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Alarm : MonoBehaviour
 {
-    private Clock clock;
     private DateTime alarmTime;
+    public DateTime clockTime;
     private TextMeshPro alarmClockTMP; // цифровое отображение будильника
     private AudioSource audioClip;
-    private new ParticleSystem particleSystem;
+    private ParticleSystem particleSystem;
+    private Button cancelButton;
 
     //public DateTime // взять время счасов
 
@@ -21,11 +23,11 @@ public class Alarm : MonoBehaviour
     }
 
     // запуск будильника
-    public void StartAlarm(Clock clock)
+    public void StartAlarm(Button button)
     {
-        this.clock = clock;
-        clock.cancelButton.gameObject.SetActive(true);
-        StartCoroutine(StartAlarm());
+        cancelButton = button;
+        cancelButton.gameObject.SetActive(true);
+        StartCoroutine(AlarmClock());
     }
 
     // обновление времени на незаведенном будильнике
@@ -36,10 +38,10 @@ public class Alarm : MonoBehaviour
     }
 
     // запустить отсчет до звонка будильника
-    private IEnumerator StartAlarm()
+    private IEnumerator AlarmClock()
     {
         TimeSpan timeSpan = new();
-        timeSpan = alarmTime - clock.Time;
+        timeSpan = alarmTime - clockTime;
         if (timeSpan.TotalMilliseconds < 0)
         {
             alarmTime = alarmTime.AddDays(1);
@@ -47,7 +49,7 @@ public class Alarm : MonoBehaviour
         do
         {
             yield return new WaitForSeconds(1);
-            timeSpan = alarmTime - clock.Time;
+            timeSpan = alarmTime - clockTime;
         } while (timeSpan.TotalMilliseconds > 0);
         audioClip.Play();
         StartCoroutine(NotifyAlarm());
@@ -63,6 +65,6 @@ public class Alarm : MonoBehaviour
             yield return new WaitForSeconds(1);
         }
         Destroy(this.gameObject);
-        clock.cancelButton.gameObject.SetActive(false);
+        cancelButton.gameObject.SetActive(false);
     }
 }

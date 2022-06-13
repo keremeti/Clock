@@ -22,7 +22,10 @@ public class SourceManager : MonoBehaviour
         // добавление всех типов источников в список источников
         dateTimeSources.Add(new TimeApiSource());
         dateTimeSources.Add(new WorldTimeApiSource());
+    }
 
+    private void Start()
+    {
         // синхронизация по таймеру
         timer = new Timer(waitingTime);
         timer.Elapsed += TimerElapse;

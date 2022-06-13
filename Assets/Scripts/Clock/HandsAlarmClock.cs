@@ -30,8 +30,9 @@ public class HandsAlarmClock : ClockState
     // запуск будильника и изменения состояния часов
     private void StartAlarm()
     {
-        alarm.StartAlarm(clock);
+        alarm.StartAlarm(clock.cancelButton);
         EventManager.OnDeselectHand.RemoveListener(StartAlarm);
         clock.state = new NormalClock(clock);
+        clock.state.Start();
     }
 }
