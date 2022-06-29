@@ -4,11 +4,16 @@ using System;
 using System.Collections;
 
 // запрос в сеть
-public class NetworkService : MonoBehaviour
+public class NetworkService : MonoBehaviour, IDisposable
 {
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
+
     public IEnumerator GetTimeJson(string url, Action<string> errorCallback, Action<string> successCallback)
     {
-        UnityWebRequest uwr = UnityWebRequest.Get(url);
+        using UnityWebRequest uwr = UnityWebRequest.Get(url);
         yield return uwr.SendWebRequest();
 
         if (uwr.result != UnityWebRequest.Result.Success)

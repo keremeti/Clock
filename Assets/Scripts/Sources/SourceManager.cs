@@ -13,7 +13,6 @@ public class SourceManager : MonoBehaviour
     private Timer timer;
     // время ожидания синхронизации
     private int waitingTime = 3600000;
-    //CancellationTokenSource source = new CancellationTokenSource();
 
     private void Awake()
     {

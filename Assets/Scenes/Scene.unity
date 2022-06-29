@@ -6334,6 +6334,12 @@ MonoBehaviour:
   hoursHand: {fileID: 1907228528}
   minutesHand: {fileID: 80427815}
   secondsHand: {fileID: 601143822}
+  hoursHandsRotation: {fileID: 80427817}
+  minutesHandsRotation: {fileID: 80427817}
+  secondsHandsRotation: {fileID: 601143824}
+  hoursController: {fileID: 1907228534}
+  minutesController: {fileID: 80427821}
+  secondsController: {fileID: 601143828}
   alarmPrefab: {fileID: 4671642578940138532, guid: 409cd7df0a9bb407198576b2e06acebc, type: 3}
   alarmCLock: {fileID: 0}
   displayClock: {fileID: 1607877111}

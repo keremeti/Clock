@@ -9,63 +9,53 @@ public class Clock : MonoBehaviour
     [SerializeField] private GameObject minutesHand;
     [SerializeField] private GameObject secondsHand;
 
-    private HandsRotation hoursHandsRotation;
-    private HandsRotation minutesHandsRotation;
-    private HandsRotation secondsHandsRotation;
+    [SerializeField] private HandsRotation hoursHandsRotation;
+    [SerializeField] private HandsRotation minutesHandsRotation;
+    [SerializeField] private HandsRotation secondsHandsRotation;
 
-    private HandsController hoursController;
-    private HandsController minutesController;
-    private HandsController secondsController;
+    [SerializeField] private HandsController hoursController;
+    [SerializeField] private HandsController minutesController;
+    [SerializeField] private HandsController secondsController;
 
     [SerializeField] private GameObject alarmPrefab;
     private Alarm alarm;
 
     [HideInInspector] public GameObject alarmCLock;
-    private DateTime time = new();
-    public DateTime Time => time;
-    public ClockState state;
+    public DateTime Time { get; private set; }
+    public ClockState State { get; set; }
 
-    public Display displayClock;
-    public Button cancelButton;
-    public AlarmClockInputPanel inputFields;
+    [SerializeField] private Display displayClock;
+    [SerializeField] private Button cancelButton;
+    public Button CancelButton { get => cancelButton; }
+    [SerializeField] private AlarmClockInputPanel inputFields;
+
+    private DateTime beforeYieldTime = new();
+    private DateTime afterYieldTime = new();
 
     private void Awake()
     {
-        hoursHandsRotation = hoursHand.GetComponent<HandsRotation>();
-        minutesHandsRotation = minutesHand.GetComponent<HandsRotation>();
-        secondsHandsRotation = secondsHand.GetComponent<HandsRotation>();
-        hoursController = hoursHand.GetComponent<HandsController>();
-        minutesController = minutesHand.GetComponent<HandsController>();
-        secondsController = secondsHand.GetComponent<HandsController>();
-
         EventManager.OnTimeUpdated.AddListener(SynchronizeTime);
         EventManager.OnDeselectInputField.AddListener(CreateInputAlarm);
     }
 
     private void Start()
     {
-        StartCoroutine(StartClock());
+        beforeYieldTime = DateTime.Now;
         cancelButton.onClick.AddListener(DestroyAlarm);
-        state = new NormalClock(this);
-        state.Start();
+        State = new NormalClock(this);
+        State.Start();
     }
 
-    // сами часы
-    private IEnumerator StartClock()
+    private void UpdateTime()
     {
-        DateTime beforeYieldTime = new();
-        DateTime afterYieldTime = new();
-        TimeSpan timeSpan = new();
-        while (true)
+        // вычесляем прошедшее время
+        afterYieldTime = DateTime.Now;
+        TimeSpan timeSpan = afterYieldTime - beforeYieldTime;
+        if (timeSpan.TotalMilliseconds >= 1000)
         {
+            Time = Time.AddMilliseconds(timeSpan.TotalMilliseconds);
+            displayClock.SetTime(Time);
             beforeYieldTime = DateTime.Now;
-            yield return new WaitForSeconds(1);
-            afterYieldTime = DateTime.Now;
-            // так как WaitForSeconds(1) не гарантирует абсолюбной точности,
-            // то мы вычесляем прошедшее время
-            timeSpan = afterYieldTime - beforeYieldTime;
-            time = time.AddMilliseconds(timeSpan.TotalMilliseconds);
-            displayClock.SetTime(time);
         }
     }
 
@@ -74,7 +64,7 @@ public class Clock : MonoBehaviour
         int hours, minutes, seconds;
         inputFields.GetInputFieldTime(out hours, out minutes, out seconds);
         
-        alarm = CreateAlarm(new(time.Year, time.Month, time.Day,
+        alarm = CreateAlarm(new(Time.Year, Time.Month, Time.Day,
             hours, minutes, seconds));
         alarm.StartAlarm(cancelButton);
     }
@@ -90,23 +80,25 @@ public class Clock : MonoBehaviour
         alarmCLock = Instantiate<GameObject>(alarmPrefab);
         alarm = alarmCLock.GetComponent<Alarm>();
         alarm.UpdateAlarm(alarmTime);
-        alarm.clockTime = time;
+        alarm.clockTime = Time;
         return alarm;
     }
 
     private void LateUpdate()
     {
-        state.Update();
+        State.Update();
         if (alarm is not null)
         {
-            alarm.clockTime = time;
+            alarm.clockTime = Time;
         }
+
+        UpdateTime();
     }
 
     // синхронизация времени с внешним источником
     private void SynchronizeTime(DateTime dateTime)
     {
-        time = dateTime;
+        Time = dateTime;
     }
 
     // движение всех стрелок на заданное время
@@ -125,7 +117,7 @@ public class Clock : MonoBehaviour
 
     public DateTime GetHandsTime()
     {
-        DateTime handsTime = new(time.Year, time.Month, time.Day,
+        DateTime handsTime = new(Time.Year, Time.Month, Time.Day,
             (int)hoursController.AlarmTime,
             (int)minutesController.AlarmTime,
             (int)secondsController.AlarmTime);

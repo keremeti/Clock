@@ -15,8 +15,8 @@ public class NormalClock : ClockState
 
     private void SwitchToHandsAlarmState(HandsRotation handsRotation)
     {
-        clock.state = new HandsAlarmClock(clock, handsRotation);
-        clock.state.Start();
+        clock.State = new HandsAlarmClock(clock, handsRotation);
+        clock.State.Start();
         EventManager.OnSelectHand.RemoveListener(SwitchToHandsAlarmState);
     }
 }
